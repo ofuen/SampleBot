@@ -1,2 +1,2 @@
-# SampleBot
+# 🤖 SampleBot
 SampleBot with Node.js
