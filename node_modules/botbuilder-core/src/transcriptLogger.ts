@@ -47,9 +47,30 @@ export class TranscriptLoggerMiddleware implements Middleware {
 
         // hook up onSend pipeline
         context.onSendActivities(async (ctx: TurnContext, activities: Partial<Activity>[], next2: () => Promise<ResourceResponse[]>) => {
-            // run full pipeline
+            // Run full pipeline.
             const responses: ResourceResponse[] = await next2();
-            activities.forEach((a: ResourceResponse) => this.logActivity(transcript, this.cloneActivity(a)));
+
+            activities.map((a: Partial<Activity>, index: number) => {
+                const clonedActivity = this.cloneActivity(a);
+                clonedActivity.id = responses && responses[index] ?
+                    responses[index].id :
+                    clonedActivity.id;
+
+                // For certain channels, a ResourceResponse with an id is not always sent to the bot.
+                // This fix uses the timestamp on the activity to populate its id for logging the transcript.
+                // If there is no outgoing timestamp, the current time for the bot is used for the activity.id.
+                // See https://github.com/microsoft/botbuilder-js/issues/1122
+                if (!clonedActivity.id) {
+                    const prefix = `g_${Math.random().toString(36).slice(2,8)}`;
+                    if (clonedActivity.timestamp) {
+                        clonedActivity.id = `${prefix}${new Date(clonedActivity.timestamp).getTime().toString()}`;
+                    } else {
+                        clonedActivity.id = `${prefix}${new Date().getTime().toString()}`;
+                    }
+                }
+
+                this.logActivity(transcript, clonedActivity);
+            });
 
             return responses;
         });
@@ -138,13 +159,13 @@ export class TranscriptLoggerMiddleware implements Middleware {
      * Error logging helper function.
      * @param err Error or object to console.error out.
      */
-    private transcriptLoggerErrorHandler(err: Error|any): void {
+    private transcriptLoggerErrorHandler(err: Error | any): void {
         // tslint:disable:no-console
         if (err instanceof Error) {
-            console.error(`TranscriptLoggerMiddleware logActivity failed: "${ err.message }"`);
+            console.error(`TranscriptLoggerMiddleware logActivity failed: "${err.message}"`);
             console.error(err.stack);
         } else {
-            console.error(`TranscriptLoggerMiddleware logActivity failed: "${ JSON.stringify(err) }"`);
+            console.error(`TranscriptLoggerMiddleware logActivity failed: "${JSON.stringify(err)}"`);
         }
         // tslint:enable:no-console
     }
@@ -186,7 +207,7 @@ export interface TranscriptStore extends TranscriptLogger {
      * Get activities for a conversation (Aka the transcript)
      * @param channelId Channel Id.
      * @param conversationId Conversation Id.
-     * @param continuationToken Continuatuation token to page through results.
+     * @param continuationToken Continuation token to page through results.
      * @param startDate Earliest time to include.
      */
     getTranscriptActivities(
@@ -199,7 +220,7 @@ export interface TranscriptStore extends TranscriptLogger {
     /**
      * List conversations in the channelId.
      * @param channelId Channel Id.
-     * @param continuationToken Continuatuation token to page through results.
+     * @param continuationToken Continuation token to page through results.
      */
     listTranscripts(channelId: string, continuationToken?: string): Promise<PagedResult<TranscriptInfo>>;
 

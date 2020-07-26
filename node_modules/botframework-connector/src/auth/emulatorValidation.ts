@@ -5,13 +5,16 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License.
  */
-import * as jwt from 'jsonwebtoken';
+import { decode, VerifyOptions } from 'jsonwebtoken';
 import { ClaimsIdentity } from './claimsIdentity';
 import { AuthenticationConstants } from './authenticationConstants';
+import { AuthenticationConfiguration } from './authenticationConfiguration';
 import { GovernmentConstants } from './governmentConstants';
 import { ICredentialProvider } from './credentialProvider';
 import { JwtTokenExtractor } from './jwtTokenExtractor';
 import { JwtTokenValidation } from './jwtTokenValidation';
+import { AuthenticationError } from './authenticationError';
+import { StatusCodes } from 'botframework-schema';
 
 /**
  * Validates and Examines JWT tokens from the Bot Framework Emulator
@@ -21,7 +24,7 @@ export namespace EmulatorValidation {
     /**
      * TO BOT FROM EMULATOR: Token validation parameters when connecting to a channel.
      */
-    export const ToBotFromEmulatorTokenValidationParameters: jwt.VerifyOptions = {
+    export const ToBotFromEmulatorTokenValidationParameters: VerifyOptions = {
         issuer: [
             'https://sts.windows.net/d6d49420-f39b-4df7-a1dc-d59a935871db/',                    // Auth v3.1, 1.0 token
             'https://login.microsoftonline.com/d6d49420-f39b-4df7-a1dc-d59a935871db/v2.0',      // Auth v3.1, 2.0 token
@@ -67,7 +70,7 @@ export namespace EmulatorValidation {
         }
 
         // Parse the Big Long String into an actual token.
-        const token: any = <any>jwt.decode(bearerToken, { complete: true });
+        const token: any = decode(bearerToken, { complete: true });
         if (!token) {
             return false;
         }
@@ -95,13 +98,16 @@ export namespace EmulatorValidation {
      * @param  {string} authHeader The raw HTTP header in the format: "Bearer [longString]"
      * @param  {ICredentialProvider} credentials The user defined set of valid credentials, such as the AppId.
      * @param  {string} channelService The channelService value that distinguishes public Azure from US Government Azure.
+     * @param  {string} channelId
+     * @param  {AuthenticationConfiguration} authConfig
      * @returns {Promise<ClaimsIdentity>} A valid ClaimsIdentity.
      */
     export async function authenticateEmulatorToken(
         authHeader: string,
         credentials: ICredentialProvider,
         channelService: string,
-        channelId: string
+        channelId: string,
+        authConfig: AuthenticationConfiguration = new AuthenticationConfiguration()
     ): Promise<ClaimsIdentity> {
         const openIdMetadataUrl = (channelService !== undefined && JwtTokenValidation.isGovernment(channelService)) ?
             GovernmentConstants.ToBotFromEmulatorOpenIdMetadataUrl :
@@ -112,15 +118,15 @@ export namespace EmulatorValidation {
             openIdMetadataUrl,
             AuthenticationConstants.AllowedSigningAlgorithms);
 
-        const identity: ClaimsIdentity = await tokenExtractor.getIdentityFromAuthHeader(authHeader, channelId);
+        const identity: ClaimsIdentity = await tokenExtractor.getIdentityFromAuthHeader(authHeader, channelId, authConfig.requiredEndorsements);
         if (!identity) {
             // No valid identity. Not Authorized.
-            throw new Error('Unauthorized. No valid identity.');
+            throw new AuthenticationError('Unauthorized. No valid identity.', StatusCodes.UNAUTHORIZED);
         }
 
         if (!identity.isAuthenticated) {
             // The token is in some way invalid. Not Authorized.
-            throw new Error('Unauthorized. Is not authenticated');
+            throw new AuthenticationError('Unauthorized. Is not authenticated', StatusCodes.UNAUTHORIZED);
         }
 
         // Now check that the AppID in the claimset matches
@@ -129,7 +135,7 @@ export namespace EmulatorValidation {
         // Async validation.
         const versionClaim: string = identity.getClaimValue(AuthenticationConstants.VersionClaim);
         if (versionClaim === null) {
-            throw new Error('Unauthorized. "ver" claim is required on Emulator Tokens.');
+            throw new AuthenticationError('Unauthorized. "ver" claim is required on Emulator Tokens.', StatusCodes.UNAUTHORIZED);
         }
 
         let appId = '';
@@ -142,7 +148,7 @@ export namespace EmulatorValidation {
             const appIdClaim: string = identity.getClaimValue(AuthenticationConstants.AppIdClaim);
             if (!appIdClaim) {
                 // No claim around AppID. Not Authorized.
-                throw new Error('Unauthorized. "appid" claim is required on Emulator Token version "1.0".');
+                throw new AuthenticationError('Unauthorized. "appid" claim is required on Emulator Token version "1.0".', StatusCodes.UNAUTHORIZED);
             }
 
             appId = appIdClaim;
@@ -151,17 +157,17 @@ export namespace EmulatorValidation {
             const appZClaim: string = identity.getClaimValue(AuthenticationConstants.AuthorizedParty);
             if (!appZClaim) {
                 // No claim around AppID. Not Authorized.
-                throw new Error('Unauthorized. "azp" claim is required on Emulator Token version "2.0".');
+                throw new AuthenticationError('Unauthorized. "azp" claim is required on Emulator Token version "2.0".', StatusCodes.UNAUTHORIZED);
             }
 
             appId = appZClaim;
         } else {
             // Unknown Version. Not Authorized.
-            throw new Error(`Unauthorized. Unknown Emulator Token version "${ versionClaim }".`);
+            throw new AuthenticationError(`Unauthorized. Unknown Emulator Token version "${ versionClaim }".`, StatusCodes.UNAUTHORIZED);
         }
 
         if (!await credentials.isValidAppId(appId)) {
-            throw new Error(`Unauthorized. Invalid AppId passed on token: ${ appId }`);
+            throw new AuthenticationError(`Unauthorized. Invalid AppId passed on token: ${ appId }`, StatusCodes.UNAUTHORIZED);
         }
 
         return identity;

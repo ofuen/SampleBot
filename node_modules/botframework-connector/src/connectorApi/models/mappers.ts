@@ -956,6 +956,28 @@ export const ConversationsResult: msRest.CompositeMapper = {
   }
 };
 
+export const ExpectedReplies: msRest.CompositeMapper = {
+  serializedName: "ExpectedReplies",
+  type: {
+    name: "Composite",
+    className: "ExpectedReplies",
+    modelProperties: {
+      activities: {
+        serializedName: "activities",
+        type: {
+          name: "Sequence",
+          element: {
+            type: {
+              name: "Composite",
+              className: "Activity"
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
 export const ResourceResponse: msRest.CompositeMapper = {
   serializedName: "ResourceResponse",
   type: {
@@ -2147,6 +2169,9 @@ export const MicrosoftPayMethodData: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentAddress: msRest.CompositeMapper = {
   serializedName: "PaymentAddress",
   type: {
@@ -2228,6 +2253,9 @@ export const PaymentAddress: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentCurrencyAmount: msRest.CompositeMapper = {
   serializedName: "PaymentCurrencyAmount",
   type: {
@@ -2256,6 +2284,9 @@ export const PaymentCurrencyAmount: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentItem: msRest.CompositeMapper = {
   serializedName: "PaymentItem",
   type: {
@@ -2285,6 +2316,9 @@ export const PaymentItem: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentShippingOption: msRest.CompositeMapper = {
   serializedName: "PaymentShippingOption",
   type: {
@@ -2320,6 +2354,9 @@ export const PaymentShippingOption: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentDetailsModifier: msRest.CompositeMapper = {
   serializedName: "PaymentDetailsModifier",
   type: {
@@ -2366,6 +2403,9 @@ export const PaymentDetailsModifier: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentDetails: msRest.CompositeMapper = {
   serializedName: "PaymentDetails",
   type: {
@@ -2425,6 +2465,9 @@ export const PaymentDetails: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentMethodData: msRest.CompositeMapper = {
   serializedName: "PaymentMethodData",
   type: {
@@ -2452,6 +2495,9 @@ export const PaymentMethodData: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentOptions: msRest.CompositeMapper = {
   serializedName: "PaymentOptions",
   type: {
@@ -2492,6 +2538,9 @@ export const PaymentOptions: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentRequest: msRest.CompositeMapper = {
   serializedName: "PaymentRequest",
   type: {
@@ -2540,6 +2589,9 @@ export const PaymentRequest: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentResponse: msRest.CompositeMapper = {
   serializedName: "PaymentResponse",
   type: {
@@ -2587,6 +2639,9 @@ export const PaymentResponse: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentRequestComplete: msRest.CompositeMapper = {
   serializedName: "PaymentRequestComplete",
   type: {
@@ -2617,6 +2672,9 @@ export const PaymentRequestComplete: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentRequestCompleteResult: msRest.CompositeMapper = {
   serializedName: "PaymentRequestCompleteResult",
   type: {
@@ -2633,6 +2691,9 @@ export const PaymentRequestCompleteResult: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentRequestUpdate: msRest.CompositeMapper = {
   serializedName: "PaymentRequestUpdate",
   type: {
@@ -2669,6 +2730,9 @@ export const PaymentRequestUpdate: msRest.CompositeMapper = {
   }
 };
 
+/**
+ * @deprecated Bot Framework no longer supports payments
+ */
 export const PaymentRequestUpdateResult: msRest.CompositeMapper = {
   serializedName: "PaymentRequestUpdateResult",
   type: {
