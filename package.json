@@ -19,7 +19,7 @@
   "dependencies": {
     "botbuilder": "^4.9.3",
     "dotenv-extended": "^2.8.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "motivation": "^1.0.3",
     "request-promise": "^4.2.6",
     "restify": "^8.5.1"
