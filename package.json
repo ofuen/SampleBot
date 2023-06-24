@@ -17,11 +17,11 @@
   },
   "homepage": "https://github.com/ofuen/SampleBot#readme",
   "dependencies": {
-    "botbuilder": "^4.17.0",
+    "botbuilder": "^4.20.0",
     "dotenv-extended": "^2.8.0",
     "lodash": "^4.17.21",
     "motivation": "^1.0.3",
     "request-promise": "^4.2.6",
-    "restify": "^8.5.1"
+    "restify": "^11.1.0"
   }
 }
